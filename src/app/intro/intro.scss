@@ -1,0 +1,140 @@
+@import '../../styles/mixins';
+
+.intro-viewport {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  overflow: hidden;
+  perspective: 1200px;
+  transition: opacity 0.8s ease-in, filter 0.8s ease-in, transform 0.8s cubic-bezier(0.4, 0, 1, 1);
+  will-change: opacity, filter, transform;
+}
+
+// 🃏 Shuffling Card Loader Container
+.deck-shuffle-loader {
+  position: absolute;
+  bottom: 12%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+.deck-stack {
+  position: relative;
+  width: 90px;
+  height: 145px;
+  background: var(--color-surface);
+  border: 2px dashed rgba(168, 85, 247, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+// ✨ Individual Card Moving Entity
+.cascading-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform-style: preserve-3d;
+  animation: cardShuffleRelease 3.6s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+// Aesthetic outline wireframe for loader cards
+.card-wireframe {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(42, 33, 78, 0.85), rgba(18, 14, 36, 0.95));
+  border: 1.5px solid rgba(168, 85, 247, 0.6);
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .inner-arcana-seal {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px var(--color-accent));
+    animation: pulseIcon 1.2s ease-in-out infinite alternate;
+  }
+}
+
+.shuffling-text {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.1rem;
+  color: rgba(168, 85, 247, 0.8);
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  animation: breatheText 1.5s ease-in-out infinite alternate;
+}
+
+// Typography Positioning
+.branding-centerpiece {
+  text-align: center;
+  margin-bottom: 8rem; // Pushes title higher up above shuffling deck
+  z-index: 10;
+}
+
+.mystic-title {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  animation: majesticGlow 3s ease-in-out infinite alternate;
+}
+
+.mystic-subtitle {
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  letter-spacing: 0.1em;
+  color: rgba(168, 85, 247, 0.6);
+  margin-top: 0.8rem;
+  text-transform: lowercase;
+  font-family: var(--font-display);
+}
+
+// 🎞️ Keyframes for Card Flight Physics
+@keyframes cardShuffleRelease {
+  0% {
+    transform: translateY(0) scale(0.95) rotateY(0deg) rotateZ(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  45% {
+    // Card shoots upward, drifts laterally, and performs a 3D mid-air flip
+    transform: translateY(-240px) translateX(var(--drift-x)) scale(1.05) rotateY(180deg) rotateZ(var(--rotation));
+    opacity: 0.95;
+  }
+  100% {
+    // Card slowly dissolves and vanishes higher up in the cosmos
+    transform: translateY(-340px) translateX(calc(var(--drift-x) * 1.3)) scale(0.9) rotateY(360deg) rotateZ(calc(var(--rotation) * 1.5));
+    opacity: 0;
+  }
+}
+
+@keyframes pulseIcon {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes breatheText {
+  0% { opacity: 0.4; letter-spacing: 0.28em; }
+  100% { opacity: 1; letter-spacing: 0.34em; }
+}
+
+@keyframes majesticGlow {
+  0% { text-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+  100% { text-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 10px rgba(138, 43, 226, 0.4); }
+}

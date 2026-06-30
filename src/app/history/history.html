@@ -1,0 +1,55 @@
+<main class="history-page" @pageEnter>
+  <section class="history-card" aria-labelledby="history-heading" @cardSlideUp>
+    <header>
+      <p class="section-label">Tarot Origins</p>
+      <h1 id="history-heading">The Story Behind Tarot Reading</h1>
+    </header>
+
+    <div class="history-copy">
+      <p>
+        Tarot reading began as a deck of painted playing cards in 15th-century Europe. Over centuries,
+        those cards became a language of symbols, myth, and inner reflection. Today, tarot is a
+        living practice that combines archetypal imagery with personal intuition.
+      </p>
+
+      <p>
+        Each spread forms its own story. The order and position of the cards create a meaningful
+        journey that can illuminate choices, reveal hidden patterns, and help readers connect with
+        deeper guidance.
+      </p>
+    </div>
+
+    <div class="history-grid" @articlesFadeIn>
+      <article>
+        <span class="article-icon">✨</span>
+        <h2>Ancient Symbolism</h2>
+        <p>
+          Early tarot decks were rich with allegory and astrology. The Major Arcana describe human
+          growth, while the Minor Arcana speak to everyday experience. The imagery invites every
+          reader into a shared mythic landscape.
+        </p>
+      </article>
+      <article>
+        <span class="article-icon">🪞</span>
+        <h2>Reading Meaning</h2>
+        <p>
+          A tarot reading is less about fortune telling and more about reflection. Cards are
+          mirrors that reveal possibilities and remind us of the energies already present in our lives.
+        </p>
+      </article>
+      <article>
+        <span class="article-icon">🌙</span>
+        <h2>Modern Practice</h2>
+        <p>
+          Contemporary tarot embraces personal intuition, meditation, and storytelling. Readers use
+          spreads to ask questions, explore relationships, and gain perspective before choosing a path.
+        </p>
+      </article>
+    </div>
+
+    <div class="action-row" @buttonsReveal>
+      <a routerLink="/tarot" class="primary-button"><span class="button-icon">🃏</span>Return to Tarot Deck</a>
+      <a routerLink="/intro" class="secondary-button"><span class="button-icon">🔮</span>Back to Intro</a>
+    </div>
+  </section>
+</main>

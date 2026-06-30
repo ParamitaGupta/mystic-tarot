@@ -1,0 +1,180 @@
+.history-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(circle at top, rgba(196, 63, 47, 0.12), transparent 32%),
+    radial-gradient(circle at 80% 15%, rgba(232, 212, 170, 0.1), transparent 25%),
+    var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.history-card {
+  max-width: 860px;
+  width: 100%;
+  padding: 2.5rem;
+  border: 1px solid rgba(232, 212, 170, 0.2);
+  border-radius: 26px;
+  background: rgba(20, 10, 12, 0.85);
+  box-shadow: 0 0 60px rgba(196, 63, 47, 0.18);
+  backdrop-filter: blur(20px);
+}
+
+.history-card header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.section-label {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+}
+
+.history-card h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  letter-spacing: 0.08em;
+  color: var(--color-text);
+}
+
+.history-copy {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  color: rgba(245, 231, 211, 0.9);
+  line-height: 1.9;
+  font-size: 1rem;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.history-grid article {
+  padding: 1.5rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(40, 16, 17, 0.95), rgba(20, 8, 10, 0.95));
+  border: 1px solid rgba(232, 212, 170, 0.14);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+}
+
+.article-icon {
+  display: block;
+  font-size: 2.2rem;
+  margin-bottom: 0.75rem;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.history-grid article:hover {
+  transform: translateY(-6px);
+  border-color: rgba(196, 63, 47, 0.5);
+  box-shadow: 0 12px 36px rgba(196, 63, 47, 0.28), inset 0 0 20px rgba(196, 63, 47, 0.08);
+  background: linear-gradient(180deg, rgba(60, 20, 22, 0.98), rgba(30, 10, 15, 0.98));
+}
+
+.history-grid article:hover .article-icon {
+  transform: scale(1.25) rotateZ(-5deg);
+}
+
+.history-grid h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.history-grid p {
+  margin: 0;
+  color: rgba(245, 231, 211, 0.85);
+  line-height: 1.75;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  padding: 0.95rem 1.25rem;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  gap: 0.6rem;
+}
+
+.button-icon {
+  font-size: 1.1rem;
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.primary-button:hover .button-icon,
+.secondary-button:hover .button-icon {
+  transform: scale(1.25);
+}
+
+.primary-button {
+  background: linear-gradient(135deg, rgba(196, 63, 47, 0.95), rgba(232, 212, 170, 0.15));
+  color: var(--color-bg);
+  box-shadow: 0 12px 34px rgba(196, 63, 47, 0.22);
+}
+
+.secondary-button {
+  background: rgba(232, 212, 170, 0.08);
+  border: 1px solid rgba(232, 212, 170, 0.2);
+  color: var(--color-text);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(196, 63, 47, 0.35);
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, rgba(196, 63, 47, 1), rgba(232, 212, 170, 0.25));
+  scale: 1.02;
+}
+
+.secondary-button:hover {
+  background: rgba(232, 212, 170, 0.14);
+  border-color: rgba(196, 63, 47, 0.6);
+  scale: 1.02;
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+}

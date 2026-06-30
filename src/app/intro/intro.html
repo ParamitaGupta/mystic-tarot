@@ -1,0 +1,26 @@
+@if (!isExiting) {
+  <main class="intro-viewport" @screenExit>
+    <div class="mist-overlay layer-one"></div>
+
+    <div class="deck-shuffle-loader" aria-label="Reading cosmic energies" role="progressbar">
+      <div class="deck-stack">
+        @for (card of loadingCards; track card.id) {
+          <div class="cascading-card"
+               [style.animation-delay.s]="card.delay"
+               [style.--rotation.deg]="card.rotation"
+               [style.--drift-x.px]="card.driftX">
+            <div class="card-wireframe">
+              <div class="inner-arcana-seal">🔮</div>
+            </div>
+          </div>
+        }
+      </div>
+      <p class="shuffling-text">Shuffling the Arcana...</p>
+    </div>
+
+    <div class="branding-centerpiece">
+      <h1 class="mystic-title" @fadeInTitle>MYSTIC TAROT</h1>
+      <p class="mystic-subtitle" @fadeInSubtitle>unveil the cosmic threads</p>
+    </div>
+  </main>
+}
