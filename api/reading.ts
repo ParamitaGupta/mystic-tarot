@@ -1,10 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
 
-// Initialize the SDK; automatically uses process.env.GEMINI_API_KEY
-const ai = new GoogleGenAI({
-  apiKey: process.env['GEMINI_API_KEY'],
-});
-
 export default async function handler(req: any, res: any) {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -22,6 +17,14 @@ export default async function handler(req: any, res: any) {
 
   try {
     const { question, cards } = req.body;
+    const apiKey = process.env['GEMINI_API_KEY'];
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Server Setup Error: GEMINI_API_KEY environment variable is not defined.' });
+    }
+
+    // Initialize the SDK directly within the execution handler thread
+    const ai = new GoogleGenAI({ apiKey: apiKey });
 
     const prompt = `
       You are an expert, compassionate Tarot Card Reader with deep insight into human psychology.
@@ -35,8 +38,9 @@ export default async function handler(req: any, res: any) {
       Keep the tone mysterious yet grounded and uplifting. Use clear paragraphs.
     `;
 
+    // Using the current generation flagship model string
     const response = await ai.models.generateContent({
-      model: 'models/gemini-3.5-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
 
