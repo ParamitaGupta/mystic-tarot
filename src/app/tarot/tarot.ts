@@ -8,6 +8,9 @@ interface TarotCard {
   id: number;
   name: string;
   state: CardState;
+  type: 'Major Arcana' | 'Minor Arcana';
+  icon: string;
+  focus: string;
 }
 
 interface ReadingResponse {
@@ -15,7 +18,7 @@ interface ReadingResponse {
 }
 
 interface DeckResponse {
-  cards: string[];
+  cards: Omit<TarotCard, 'state'>[];
 }
 
 @Component({
@@ -42,13 +45,11 @@ export class TarotComponent implements OnDestroy {
   onSpreadChange(value: number) {
     const spreadSize = Number(value);
     
-    // Explicitly validate configuration settings for 3 or 9 cards
     if (spreadSize !== 3 && spreadSize !== 9) return;
 
     this.spreadSize.set(spreadSize);
     this.isSpreadSelected.set(true);
 
-    // Reset layout elements
     this.reading.set('');
     this.displayedReading.set('');
     this.isReadingLoading.set(false);
@@ -56,12 +57,11 @@ export class TarotComponent implements OnDestroy {
     this.stopTyping();
     this.pulledCards.set([]);
 
-    // Fetch the shuffled card configuration from your serverless API backend
+    // Fetch the detailed cards directly from your backend
     this.http.get<DeckResponse>(`/api/reading?count=${spreadSize}`).subscribe({
       next: (response) => {
-        this.cards.set(response.cards.map((cardName, index) => ({
-          id: index + 1,
-          name: cardName,
+        this.cards.set(response.cards.map(card => ({
+          ...card,
           state: 'hidden'
         })));
       },
@@ -72,7 +72,6 @@ export class TarotComponent implements OnDestroy {
   }
 
   revealCard(card: TarotCard) {
-    // Only process if the card is hidden and we haven't hit the spread limit
     if (card.state === 'hidden' && this.pulledCards().length < this.spreadSize()) {
       this.cards.update(cards =>
         cards.map(currentCard =>
@@ -83,7 +82,6 @@ export class TarotComponent implements OnDestroy {
       const updatedPulls = [...this.pulledCards(), card.name];
       this.pulledCards.set(updatedPulls);
 
-      // Trigger the Gemini structural analysis ONLY when the full layout size is flipped
       if (updatedPulls.length === this.spreadSize()) {
         this.getGeminiReading();
       }
@@ -109,7 +107,7 @@ export class TarotComponent implements OnDestroy {
         this.startTyping(response.reading);
       },
       error: (error) => {
-        console.error('Error fetching reading execution:', error);
+        console.error('Error fetching reading:', error);
         const fallbackReading = 'An error occurred while compiling the psychological synthesis. Please try again.';
         this.reading.set(fallbackReading);
         this.isReadingLoading.set(false);
