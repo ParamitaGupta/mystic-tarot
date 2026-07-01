@@ -14,6 +14,10 @@ interface ReadingResponse {
   reading: string;
 }
 
+interface DeckResponse {
+  cards: string[];
+}
+
 @Component({
   standalone: true,
   selector: 'app-tarot',
@@ -35,36 +39,40 @@ export class TarotComponent implements OnDestroy {
   isReadingLoading = signal(false);
   isReadingTyping = signal(false);
 
-  masterDeck = [
-    { name: 'The Fool' }, { name: 'The Magician' }, { name: 'The High Priestess' },
-    { name: 'The Empress' }, { name: 'The Emperor' }, { name: 'The Hierophant' },
-    { name: 'The Lovers' }, { name: 'The Chariot' }, { name: 'Strength' }
-
-  ];
-
   onSpreadChange(value: number) {
     const spreadSize = Number(value);
+    
+    // Explicitly validate configuration settings for 3 or 9 cards
+    if (spreadSize !== 3 && spreadSize !== 9) return;
+
     this.spreadSize.set(spreadSize);
+    this.isSpreadSelected.set(true);
 
-    if (spreadSize > 0) {
-      this.isSpreadSelected.set(true);
+    // Reset layout elements
+    this.reading.set('');
+    this.displayedReading.set('');
+    this.isReadingLoading.set(false);
+    this.isReadingTyping.set(false);
+    this.stopTyping();
+    this.pulledCards.set([]);
 
-      this.reading.set('');
-      this.displayedReading.set('');
-      this.isReadingLoading.set(false);
-      this.isReadingTyping.set(false);
-      this.stopTyping();
-      this.pulledCards.set([]);
-
-      this.cards.set(this.masterDeck.slice(0, spreadSize).map((card, index) => ({
-        id: index + 1,
-        name: card.name,
-        state: 'hidden'
-      })));
-    }
+    // Fetch the shuffled card configuration from your serverless API backend
+    this.http.get<DeckResponse>(`/api/reading?count=${spreadSize}`).subscribe({
+      next: (response) => {
+        this.cards.set(response.cards.map((cardName, index) => ({
+          id: index + 1,
+          name: cardName,
+          state: 'hidden'
+        })));
+      },
+      error: (error) => {
+        console.error('Failed to pull randomized backend deck:', error);
+      }
+    });
   }
 
   revealCard(card: TarotCard) {
+    // Only process if the card is hidden and we haven't hit the spread limit
     if (card.state === 'hidden' && this.pulledCards().length < this.spreadSize()) {
       this.cards.update(cards =>
         cards.map(currentCard =>
@@ -72,10 +80,11 @@ export class TarotComponent implements OnDestroy {
         )
       );
 
-      const pulledCards = [...this.pulledCards(), card.name];
-      this.pulledCards.set(pulledCards);
+      const updatedPulls = [...this.pulledCards(), card.name];
+      this.pulledCards.set(updatedPulls);
 
-      if (pulledCards.length === 1) {
+      // Trigger the Gemini structural analysis ONLY when the full layout size is flipped
+      if (updatedPulls.length === this.spreadSize()) {
         this.getGeminiReading();
       }
     }
@@ -100,8 +109,8 @@ export class TarotComponent implements OnDestroy {
         this.startTyping(response.reading);
       },
       error: (error) => {
-        console.error('Error fetching reading:', error);
-        const fallbackReading = 'An error occurred while fetching the reading. Please try again.';
+        console.error('Error fetching reading execution:', error);
+        const fallbackReading = 'An error occurred while compiling the psychological synthesis. Please try again.';
         this.reading.set(fallbackReading);
         this.isReadingLoading.set(false);
         this.startTyping(fallbackReading);

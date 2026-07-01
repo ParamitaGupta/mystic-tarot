@@ -31,7 +31,10 @@
     <div class="cards-section" animate.enter="cards-enter" role="main" aria-label="Tarot reading area">
       <!-- Input Section -->
       <section class="input-panel" animate.enter="fade-in">
-        <p class="instructions"><span class="instruction-icon">✍️</span>Focus your intent, type your inquiry, and uncover your {{ spreadSize() }} cards.</p>
+        <p class="instructions">
+          <span class="instruction-icon">✍️</span>
+          Focus your intent, type your inquiry, and uncover your {{ spreadSize() }} cards.
+        </p>
         <input [ngModel]="question()"
                (ngModelChange)="question.set($event)"
                placeholder="What does your path hold?"
@@ -40,28 +43,37 @@
         <small id="instruction-hint" class="sr-only">Type your question and click cards to reveal them</small>
       </section>
 
-      <!-- Card Board -->
-      <div class="deck-board"
-           [class.grid-3]="spreadSize() === 3"
-           [class.grid-9]="spreadSize() === 9"
-           role="region"
-           aria-label="Tarot card deck">
-        @for (card of cards(); track card.id) {
-          <button class="card-scene"
-                  [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'revealed' : 'hidden, press enter to reveal')"
-                  [disabled]="card.state === 'revealed'"
-                  (click)="revealCard(card)"
-                  (keyup.enter)="revealCard(card)"
-                  type="button">
-            <div class="card-entity" [class.is-revealed]="card.state === 'revealed'" aria-hidden="true">
-              <div class="card-face back">
-                <div class="constellation-pattern">✨</div>
-              </div>
-              <div class="card-face front" [class.active]="card.state === 'revealed'">
-                <h3 class="card-title">{{card.name}}</h3>
-              </div>
-            </div>
-          </button>
+      <!-- Card Board with Shuffling Loading Fallback -->
+      <div class="deck-board-container" style="position: relative; min-height: 200px;">
+        @if (cards().length === 0) {
+          <!-- Visual feedback while fetching the randomized deck setup from the GET API -->
+          <div class="deck-shuffling-status" style="text-align: center; padding: 2rem;" role="status" aria-live="polite">
+            <p>Shuffling the sacred deck...</p>
+          </div>
+        } @else {
+          <div class="deck-board"
+               [class.grid-3]="spreadSize() === 3"
+               [class.grid-9]="spreadSize() === 9"
+               role="region"
+               aria-label="Tarot card deck">
+            @for (card of cards(); track card.id) {
+              <button class="card-scene"
+                      [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'revealed' : 'hidden, press enter to reveal')"
+                      [disabled]="card.state === 'revealed'"
+                      (click)="revealCard(card)"
+                      (keyup.enter)="revealCard(card)"
+                      type="button">
+                <div class="card-entity" [class.is-revealed]="card.state === 'revealed'" aria-hidden="true">
+                  <div class="card-face back">
+                    <div class="constellation-pattern">✨</div>
+                  </div>
+                  <div class="card-face front" [class.active]="card.state === 'revealed'">
+                    <h3 class="card-title">{{card.name}}</h3>
+                  </div>
+                </div>
+              </button>
+            }
+          </div>
         }
       </div>
     </div>
@@ -76,7 +88,8 @@
   } @else if (reading()) {
     <article class="reading-result" animate.enter="fade-in" role="region" aria-label="Tarot reading result" aria-live="polite">
       <h2>Your Prophecy</h2>
-      <p class="typed-reading" [class.is-typing]="isReadingTyping()">{{ displayedReading() }}</p>
+      <!-- Preservation of whitespace styling formatting rules from the structured Gemini API payload response -->
+      <p class="typed-reading" [class.is-typing]="isReadingTyping()" style="white-space: pre-wrap;">{{ displayedReading() }}</p>
     </article>
   }
 </main>
