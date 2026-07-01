@@ -1,39 +1,39 @@
-<main class="tarot-container" [class.is-selected]="isSpreadSelected" [@pageEnter]>
+<main class="tarot-container" [class.is-selected]="isSpreadSelected()" animate.enter="page-enter">
   <!-- Header - animates to top on spread selection -->
-  <header [@headerPosition]="layoutState" role="banner">
+  <header role="banner">
     <h1>MysticTarot Reading</h1>
     <p>Begin by choosing your path layout below.</p>
   </header>
 
   <!-- Spread Selection Panel - animates upward on selection -->
   <section class="spread-choice-panel"
-           [@spreadPanelPosition]="layoutState"
            role="region"
            aria-label="Spread selection area"
-           [attr.aria-live]="isSpreadSelected ? 'polite' : 'off'"
-           [attr.aria-busy]="isSpreadSelected && cards.length === 0">
+           [attr.aria-live]="isSpreadSelected() ? 'polite' : 'off'"
+           [attr.aria-busy]="isSpreadSelected() && cards().length === 0">
     <div class="spread-choice">
       <label for="spreadSelect"><span class="label-icon">🎴</span>Select Your Spread Layout:</label>
       <select id="spreadSelect"
-              [(ngModel)]="spreadSize"
-              (change)="onSpreadChange()"
+              [ngModel]="spreadSize()"
+              (ngModelChange)="onSpreadChange($event)"
               aria-label="Choose between 3-card or 9-card tarot spread"
               aria-describedby="spread-hint">
-        <option [value]="0" disabled selected>-- Choose a Spread --</option>
-        <option [value]="3">3-Card Combo (Past, Present, Future)</option>
-        <option [value]="9">9-Card Combo (Comprehensive Full Spread)</option>
+        <option [ngValue]="0" disabled>-- Choose a Spread --</option>
+        <option [ngValue]="3">3-Card Combo (Past, Present, Future)</option>
+        <option [ngValue]="9">9-Card Combo (Comprehensive Full Spread)</option>
       </select>
       <small id="spread-hint" class="sr-only">Select a spread layout to reveal the interactive card area</small>
     </div>
   </section>
 
   <!-- Cards and Input Section - animates in from bottom on selection -->
-  @if (isSpreadSelected) {
-    <div class="cards-section" [@cardsContainerPosition]="cardsState" role="main" aria-label="Tarot reading area">
+  @if (isSpreadSelected()) {
+    <div class="cards-section" animate.enter="cards-enter" role="main" aria-label="Tarot reading area">
       <!-- Input Section -->
-      <section class="input-panel" [@fadeIn]>
-        <p class="instructions"><span class="instruction-icon">✍️</span>Focus your intent, type your inquiry, and uncover your {{ spreadSize }} cards.</p>
-        <input [(ngModel)]="question"
+      <section class="input-panel" animate.enter="fade-in">
+        <p class="instructions"><span class="instruction-icon">✍️</span>Focus your intent, type your inquiry, and uncover your {{ spreadSize() }} cards.</p>
+        <input [ngModel]="question()"
+               (ngModelChange)="question.set($event)"
                placeholder="What does your path hold?"
                aria-label="Enter your question for the tarot reading"
                aria-describedby="instruction-hint"/>
@@ -42,18 +42,18 @@
 
       <!-- Card Board -->
       <div class="deck-board"
-           [class.grid-3]="spreadSize == 3"
-           [class.grid-9]="spreadSize == 9"
+           [class.grid-3]="spreadSize() === 3"
+           [class.grid-9]="spreadSize() === 9"
            role="region"
            aria-label="Tarot card deck">
-        @for (card of cards; track card.id) {
+        @for (card of cards(); track card.id) {
           <button class="card-scene"
                   [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'revealed' : 'hidden, press enter to reveal')"
                   [disabled]="card.state === 'revealed'"
                   (click)="revealCard(card)"
                   (keyup.enter)="revealCard(card)"
                   type="button">
-            <div class="card-entity" [@cardFlip]="card.state" aria-hidden="true">
+            <div class="card-entity" [class.is-revealed]="card.state === 'revealed'" aria-hidden="true">
               <div class="card-face back">
                 <div class="constellation-pattern">✨</div>
               </div>
@@ -68,10 +68,15 @@
   }
 
   <!-- Reading Result -->
-  @if (reading) {
-    <article class="reading-result" [@fadeIn] role="region" aria-label="Tarot reading result" aria-live="polite">
+  @if (isReadingLoading()) {
+    <article class="reading-result reading-status" animate.enter="fade-in" role="status" aria-live="polite">
       <h2>Your Prophecy</h2>
-      <p>{{ reading }}</p>
+      <p>Reading the cards...</p>
+    </article>
+  } @else if (reading()) {
+    <article class="reading-result" animate.enter="fade-in" role="region" aria-label="Tarot reading result" aria-live="polite">
+      <h2>Your Prophecy</h2>
+      <p class="typed-reading" [class.is-typing]="isReadingTyping()">{{ displayedReading() }}</p>
     </article>
   }
 </main>

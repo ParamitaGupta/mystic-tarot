@@ -11,6 +11,10 @@
   font-family: var(--font-body);
 }
 
+.history-page-enter {
+  animation: historyPageEnter 0.9s 0.2s cubic-bezier(0, 0.8, 0.2, 1) backwards;
+}
+
 .history-card {
   max-width: 860px;
   width: 100%;
@@ -20,6 +24,10 @@
   background: rgba(20, 10, 12, 0.85);
   box-shadow: 0 0 60px rgba(196, 63, 47, 0.18);
   backdrop-filter: blur(20px);
+}
+
+.history-card-enter {
+  animation: historyCardEnter 0.8s 0.3s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
 
 .history-card header {
@@ -59,6 +67,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
   margin-bottom: 2rem;
+}
+
+.history-grid-enter {
+  animation: historyFadeUp 0.6s 0.5s ease-out backwards;
 }
 
 .history-grid article {
@@ -109,6 +121,10 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
+}
+
+.history-actions-enter {
+  animation: historyActionsEnter 0.5s 0.75s ease-out backwards;
 }
 
 .primary-button,
@@ -176,5 +192,51 @@
 @media (max-width: 860px) {
   .history-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes historyPageEnter {
+  from {
+    opacity: 0;
+    filter: blur(15px);
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes historyCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes historyFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes historyActionsEnter {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

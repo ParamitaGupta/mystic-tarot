@@ -1,5 +1,5 @@
-<main class="history-page" @pageEnter>
-  <section class="history-card" aria-labelledby="history-heading" @cardSlideUp>
+<main class="history-page" animate.enter="history-page-enter">
+  <section class="history-card" aria-labelledby="history-heading" animate.enter="history-card-enter">
     <header>
       <p class="section-label">Tarot Origins</p>
       <h1 id="history-heading">The Story Behind Tarot Reading</h1>
@@ -19,7 +19,7 @@
       </p>
     </div>
 
-    <div class="history-grid" @articlesFadeIn>
+    <div class="history-grid" animate.enter="history-grid-enter">
       <article>
         <span class="article-icon">✨</span>
         <h2>Ancient Symbolism</h2>
@@ -47,7 +47,7 @@
       </article>
     </div>
 
-    <div class="action-row" @buttonsReveal>
+    <div class="action-row" animate.enter="history-actions-enter">
       <a routerLink="/tarot" class="primary-button"><span class="button-icon">🃏</span>Return to Tarot Deck</a>
       <a routerLink="/intro" class="secondary-button"><span class="button-icon">🔮</span>Back to Intro</a>
     </div>

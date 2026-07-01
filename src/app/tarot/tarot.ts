@@ -1,66 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 import { HttpClient } from '@angular/common/http';
+
+type CardState = 'hidden' | 'revealed';
+
+interface TarotCard {
+  id: number;
+  name: string;
+  state: CardState;
+}
+
+interface ReadingResponse {
+  reading: string;
+}
 
 @Component({
   standalone: true,
   selector: 'app-tarot',
   imports: [FormsModule],
   templateUrl: './tarot.html',
-  styleUrls: ['./tarot.scss'],
-  animations: [
-    trigger('pageEnter', [
-      transition(':enter', [
-        style({ opacity: 0, filter: 'blur(15px)', transform: 'scale(0.98)' }),
-        animate('1s 0.2s cubic-bezier(0, 0.8, 0.2, 1)', style({ opacity: 1, filter: 'blur(0)', transform: 'scale(1)' }))
-      ])
-    ]),
-    trigger('headerPosition', [
-      state('initial', style({ transform: 'translateY(0) scale(1)', opacity: 1 })),
-      state('selected', style({ transform: 'translateY(-0.5rem) scale(0.97)', opacity: 1 })),
-      transition('initial => selected', [
-        animate('0.7s cubic-bezier(0.4, 0, 0.2, 1)')
-      ])
-    ]),
-    trigger('spreadPanelPosition', [
-      state('initial', style({ transform: 'translateY(0) scale(1)', opacity: 1 })),
-      state('selected', style({ transform: 'translateY(-0.5rem) scale(0.96)', opacity: 0.95 })),
-      transition('initial => selected', [
-        animate('0.7s cubic-bezier(0.4, 0, 0.2, 1)')
-      ])
-    ]),
-    trigger('cardsContainerPosition', [
-      state('hidden', style({ transform: 'translateY(24px)', opacity: 0 })),
-      state('visible', style({ transform: 'translateY(0)', opacity: 1 })),
-      transition('hidden => visible', [
-        animate('0.7s 0.2s cubic-bezier(0.4, 0, 0.2, 1)')
-      ])
-    ]),
-    trigger('cardFlip', [
-      state('hidden', style({ transform: 'rotateY(0deg)' })),
-      state('revealed', style({ transform: 'rotateY(180deg)' })),
-      transition('hidden => revealed', [
-        animate('0.6s cubic-bezier(0.23, 1, 0.32, 1)')
-      ])
-    ]),
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('0.5s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ])
-  ]
+  styleUrls: ['./tarot.scss']
 })
-export class TarotComponent {
-  spreadSize: number = 0;
-  isSpreadSelected: boolean = false;
-  layoutState: 'initial' | 'selected' = 'initial';
-  cardsState: 'hidden' | 'visible' = 'hidden';
-  cards: any[] = [];
-  pulledCards: string[] = [];
-  question: string = '';
-  reading: string = '';
+export class TarotComponent implements OnDestroy {
+  private readonly http = inject(HttpClient);
+  private typingTimer: ReturnType<typeof setInterval> | null = null;
+
+  spreadSize = signal(0);
+  isSpreadSelected = signal(false);
+  cards = signal<TarotCard[]>([]);
+  pulledCards = signal<string[]>([]);
+  question = signal('');
+  reading = signal('');
+  displayedReading = signal('');
+  isReadingLoading = signal(false);
+  isReadingTyping = signal(false);
 
   masterDeck = [
     { name: 'The Fool' }, { name: 'The Magician' }, { name: 'The High Priestess' },
@@ -69,32 +42,40 @@ export class TarotComponent {
 
   ];
 
-  constructor(private http: HttpClient) {}
+  onSpreadChange(value: number) {
+    const spreadSize = Number(value);
+    this.spreadSize.set(spreadSize);
 
-  onSpreadChange() {
-    if (this.spreadSize > 0) {
-      this.isSpreadSelected = true;
-      this.layoutState = 'selected';
-      this.cardsState = 'visible';
+    if (spreadSize > 0) {
+      this.isSpreadSelected.set(true);
 
-      this.reading = '';
-      this.pulledCards = [];
+      this.reading.set('');
+      this.displayedReading.set('');
+      this.isReadingLoading.set(false);
+      this.isReadingTyping.set(false);
+      this.stopTyping();
+      this.pulledCards.set([]);
 
-      this.cards = this.masterDeck.slice(0, this.spreadSize).map((card, index) => ({
+      this.cards.set(this.masterDeck.slice(0, spreadSize).map((card, index) => ({
         id: index + 1,
         name: card.name,
         state: 'hidden'
-      }));
+      })));
     }
   }
 
-  revealCard(card: any) {
-    if (card.state === 'hidden' && this.pulledCards.length < this.spreadSize) {
-      card.state = 'revealed';
-      this.pulledCards.push(card.name);
+  revealCard(card: TarotCard) {
+    if (card.state === 'hidden' && this.pulledCards().length < this.spreadSize()) {
+      this.cards.update(cards =>
+        cards.map(currentCard =>
+          currentCard.id === card.id ? { ...currentCard, state: 'revealed' } : currentCard
+        )
+      );
 
-      if (this.pulledCards.length === Number(this.spreadSize)) {
-        debugger;
+      const pulledCards = [...this.pulledCards(), card.name];
+      this.pulledCards.set(pulledCards);
+
+      if (pulledCards.length === 1) {
         this.getGeminiReading();
       }
     }
@@ -102,18 +83,58 @@ export class TarotComponent {
 
   getGeminiReading() {
     const payload = {
-      question: this.question,
-      cards: this.pulledCards
+      question: this.question(),
+      cards: this.pulledCards()
     };
 
-    this.http.post('/api/reading', payload).subscribe({
-      next: (response: any) => {
-        this.reading = response.reading;
+    this.isReadingLoading.set(true);
+    this.isReadingTyping.set(false);
+    this.reading.set('');
+    this.displayedReading.set('');
+    this.stopTyping();
+
+    this.http.post<ReadingResponse>('/api/reading', payload).subscribe({
+      next: (response) => {
+        this.reading.set(response.reading);
+        this.isReadingLoading.set(false);
+        this.startTyping(response.reading);
       },
       error: (error) => {
         console.error('Error fetching reading:', error);
-        this.reading = 'An error occurred while fetching the reading. Please try again.';
+        const fallbackReading = 'An error occurred while fetching the reading. Please try again.';
+        this.reading.set(fallbackReading);
+        this.isReadingLoading.set(false);
+        this.startTyping(fallbackReading);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.stopTyping();
+  }
+
+  private startTyping(text: string) {
+    let index = 0;
+    const typingSpeedMs = 18;
+
+    this.displayedReading.set('');
+    this.isReadingTyping.set(true);
+
+    this.typingTimer = setInterval(() => {
+      index += 1;
+      this.displayedReading.set(text.slice(0, index));
+
+      if (index >= text.length) {
+        this.isReadingTyping.set(false);
+        this.stopTyping();
+      }
+    }, typingSpeedMs);
+  }
+
+  private stopTyping() {
+    if (this.typingTimer) {
+      clearInterval(this.typingTimer);
+      this.typingTimer = null;
+    }
   }
 }

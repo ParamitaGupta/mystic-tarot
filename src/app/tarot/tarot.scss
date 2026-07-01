@@ -1,4 +1,4 @@
-@import '../../styles/mixins';
+@use '../../styles/mixins' as *;
 
 .tarot-container {
   display: flex;
@@ -56,6 +56,22 @@
       font-family: var(--font-display);
     }
   }
+
+  &.is-selected header {
+    transform: translateY(-0.5rem) scale(0.97);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 1s 0.2s cubic-bezier(0, 0.8, 0.2, 1) backwards;
+}
+
+.cards-enter {
+  animation: cardsEnter 0.7s 0.2s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.fade-in {
+  animation: fadeInUp 0.5s ease-out backwards;
 }
 
 .spread-choice-panel {
@@ -267,6 +283,11 @@
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+
+  &.is-revealed {
+    transform: rotateY(180deg);
+  }
 }
 
 .card-face {
@@ -351,6 +372,21 @@
     color: rgba(246, 243, 255, 0.9);
     margin: 0;
     letter-spacing: 0.05em;
+    white-space: pre-line;
+  }
+}
+
+.reading-status p {
+  text-align: center;
+}
+
+.typed-reading {
+  &.is-typing::after {
+    content: '|';
+    display: inline-block;
+    margin-left: 0.15rem;
+    color: var(--color-accent-strong);
+    animation: cursorBlink 0.8s steps(2, start) infinite;
   }
 }
 
@@ -377,6 +413,30 @@
   }
 }
 
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    filter: blur(15px);
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes cardsEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -394,5 +454,11 @@
   }
   50% {
     text-shadow: 0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(168, 85, 247, 0.3);
+  }
+}
+
+@keyframes cursorBlink {
+  50% {
+    opacity: 0;
   }
 }

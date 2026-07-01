@@ -1,5 +1,5 @@
 @if (!isExiting) {
-  <main class="intro-viewport" @screenExit>
+  <main class="intro-viewport" animate.leave="screen-exit">
     <div class="mist-overlay layer-one"></div>
 
     <div class="deck-shuffle-loader" aria-label="Reading cosmic energies" role="progressbar">
@@ -19,8 +19,8 @@
     </div>
 
     <div class="branding-centerpiece">
-      <h1 class="mystic-title" @fadeInTitle>MYSTIC TAROT</h1>
-      <p class="mystic-subtitle" @fadeInSubtitle>unveil the cosmic threads</p>
+      <h1 class="mystic-title" animate.enter="title-enter">MYSTIC TAROT</h1>
+      <p class="mystic-subtitle" animate.enter="subtitle-enter">unveil the cosmic threads</p>
     </div>
   </main>
 }
