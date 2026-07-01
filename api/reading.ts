@@ -1,5 +1,5 @@
-
-export default async function handler(req: any, res: any) {
+// Use module.exports instead of export default
+module.exports = async function handler(req: any, res: any) {
   // 1. Establish CORS fallback headers for your Angular app
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,7 +16,9 @@ export default async function handler(req: any, res: any) {
 
   try {
     const { question, cards } = req.body;
-    const apiKey = process.env['GEMINI_API_KEY'];
+    
+    // Safety fallback for TypeScript types if needed
+    const apiKey = (globalThis as any).process?.env?.GEMINI_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({ error: 'Server key setup error: GEMINI_API_KEY is missing.' });
