@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     const { question, cards } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env['GEMINI_API_KEY'];
 
     if (!apiKey) {
       return res.status(500).json({ error: 'Server key setup error: GEMINI_API_KEY is missing.' });
