@@ -59,9 +59,9 @@ export class TarotComponent implements OnDestroy {
     // Fetch the shuffled card configuration from your serverless API backend
     this.http.get<DeckResponse>(`/api/reading?count=${spreadSize}`).subscribe({
       next: (response) => {
-        this.cards.set(response.cards.map((cardName, index) => ({
+        this.cards.set(response.cards.map((name, index) => ({
           id: index + 1,
-          name: cardName,
+          name: name,
           state: 'hidden'
         })));
       },
