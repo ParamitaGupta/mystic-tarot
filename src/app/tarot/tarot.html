@@ -1,35 +1,28 @@
 <main class="tarot-container" [class.is-selected]="isSpreadSelected()" animate.enter="page-enter">
-  <!-- Header - animates to top on spread selection -->
   <header role="banner">
     <h1>MysticTarot Reading</h1>
     <p>Begin by choosing your path layout below.</p>
   </header>
 
-  <!-- Spread Selection Panel - animates upward on selection -->
-  <section class="spread-choice-panel"
-           role="region"
-           aria-label="Spread selection area"
-           [attr.aria-live]="isSpreadSelected() ? 'polite' : 'off'"
-           [attr.aria-busy]="isSpreadSelected() && cards().length === 0">
+  <!-- Spread Choice Menu Setup (Synced to 1 or 3 options) -->
+  <section class="spread-choice-panel" role="region" aria-label="Spread selection area">
     <div class="spread-choice">
       <label for="spreadSelect"><span class="label-icon">🎴</span>Select Your Spread Layout:</label>
       <select id="spreadSelect"
               [ngModel]="spreadSize()"
               (ngModelChange)="onSpreadChange($event)"
-              aria-label="Choose between 3-card or 9-card tarot spread"
-              aria-describedby="spread-hint">
+              aria-label="Choose between 1-card or 3-card tarot spread">
         <option [ngValue]="0" disabled>-- Choose a Spread --</option>
+        <option [ngValue]="1">1-Card Single Insight (Focus/Present)</option>
         <option [ngValue]="3">3-Card Combo (Past, Present, Future)</option>
-        <option [ngValue]="9">9-Card Matrix (Comprehensive Full Spread)</option>
       </select>
-      <small id="spread-hint" class="sr-only">Select a spread layout to reveal the interactive card area</small>
     </div>
   </section>
 
-  <!-- Cards and Input Section - animates in from bottom on selection -->
   @if (isSpreadSelected()) {
-    <div class="cards-section" animate.enter="cards-enter" role="main" aria-label="Tarot reading area">
-      <!-- Input Section -->
+    <div class="cards-section" animate.enter="cards-enter" role="main">
+      
+      <!-- User Input Intent Panel -->
       <section class="input-panel" animate.enter="fade-in">
         <p class="instructions">
           <span class="instruction-icon">✍️</span>
@@ -38,42 +31,45 @@
         <input [ngModel]="question()"
                (ngModelChange)="question.set($event)"
                placeholder="What does your path hold?"
-               aria-label="Enter your question for the tarot reading"
-               aria-describedby="instruction-hint"/>
-        <small id="instruction-hint" class="sr-only">Type your question and click cards to reveal them</small>
+               aria-label="Enter your question for the tarot reading"/>
       </section>
 
-      <!-- Card Board with Shuffling Loading Fallback -->
+      <!-- Active Layout Controls Block -->
+      <div class="deck-actions-bar" style="margin: 1rem 0; text-align: center;">
+        <button type="button" 
+                class="btn-shuffle"
+                [disabled]="isShuffling() || isReadingLoading()"
+                (click)="shuffleLocalDeck()">
+          🔮 Shuffle Deck On-Demand
+        </button>
+      </div>
+
+      <!-- Main Deck Board Structure -->
       <div class="deck-board-container" style="position: relative; min-height: 200px;">
-        @if (cards().length === 0) {
-          <!-- Visual feedback while fetching the randomized deck setup from the GET API -->
+        @if (cards().length === 0 || isShuffling()) {
           <div class="deck-shuffling-status" style="text-align: center; padding: 2rem;" role="status" aria-live="polite">
-            <p>Shuffling the sacred deck...</p>
+            <p>Mixing the cosmic forces and shuffling cards...</p>
           </div>
         } @else {
-          <!-- Screen reader summary of game state selection -->
           <div class="sr-only" role="status" aria-live="polite">
-            Revealed {{ pulledCards().length }} of {{ spreadSize() }} cards.
+            Flipped {{ pulledCards().length }} of {{ spreadSize() }} cards.
           </div>
 
           <div class="deck-board"
+               [class.grid-1]="spreadSize() === 1"
                [class.grid-3]="spreadSize() === 3"
-               [class.grid-9]="spreadSize() === 9"
                role="region"
                aria-label="Tarot card deck">
             @for (card of cards(); track card.id) {
               <button class="card-scene"
-                      [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'Revealed: ' + card.focus : 'Hidden, click to reveal')"
-                      [disabled]="card.state === 'revealed'"
+                      [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'Revealed: ' + card.focus : 'Hidden')"
+                      [disabled]="card.state === 'revealed' || isShuffling()"
                       (click)="revealCard(card)"
-                      (keyup.enter)="revealCard(card)"
                       type="button">
                 <div class="card-entity" [class.is-revealed]="card.state === 'revealed'" aria-hidden="true">
-                  <!-- Back Face -->
                   <div class="card-face back">
                     <div class="constellation-pattern">✨</div>
                   </div>
-                  <!-- Front Face (Populated with your rich metadata from API) -->
                   <div class="card-face front" [class.active]="card.state === 'revealed'">
                     <span class="card-icon">{{ card.icon }}</span>
                     <h3 class="card-title">{{ card.name }}</h3>
@@ -86,10 +82,30 @@
           </div>
         }
       </div>
+
+      <!-- API Request Reading Trigger (Becomes active when criteria conditions are completely satisfied) -->
+      <div class="trigger-reading-container" style="text-align: center; margin: 2rem 0;">
+        <button type="button"
+                class="btn-submit-reading"
+                [disabled]="!canRequestReading()"
+                (click)="getGeminiReading()">
+          ✨ Reveal and Read Prophecy
+        </button>
+        @if (isSpreadSelected() && pulledCards().length < spreadSize()) {
+          <p class="hint-text" style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">
+            Please flip all {{ spreadSize() }} cards to unlock the consultant pathway analysis.
+          </p>
+        } @else if (canRequestReading() === false && pulledCards().length === spreadSize()) {
+          <p class="hint-text text-alert" style="font-size: 0.85rem; color: #cca300; margin-top: 0.5rem;">
+            Please type your intent question into the text field above to receive your prophecy.
+          </p>
+        }
+      </div>
+
     </div>
   }
 
-  <!-- Reading Result -->
+  <!-- Reading Output Display Block -->
   @if (isReadingLoading()) {
     <article class="reading-result reading-status" animate.enter="fade-in" role="status" aria-live="polite">
       <h2>Your Prophecy</h2>
@@ -98,7 +114,6 @@
   } @else if (reading()) {
     <article class="reading-result" animate.enter="fade-in" role="region" aria-label="Tarot reading result" aria-live="polite">
       <h2>Your Prophecy</h2>
-      <!-- Preservation of whitespace styling formatting rules from the structured Gemini API payload response -->
       <p class="typed-reading" [class.is-typing]="isReadingTyping()" style="white-space: pre-wrap;">{{ displayedReading() }}</p>
     </article>
   }

@@ -15,21 +15,17 @@ module.exports = async function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
-  // =========================================================================
   // --- GET ROUTE: Pulls & Shuffles From the Complete 78-Card Pool ---
-  // =========================================================================
   if (req.method === 'GET') {
     try {
       const count = parseInt(req.query.count, 10) || 3;
       let deckPool = [...FALLBACK_POOL];
 
-      // Fetch the comprehensive, standard 78-card repository stream
       const deckResponse = await fetch('https://raw.githubusercontent.com/ekelen/tarot-api/master/tarot-images.json');
       
       if (deckResponse.ok) {
         const rawData = await deckResponse.json();
         if (rawData && Array.isArray(rawData.cards)) {
-          // Map the standard names into your frontend interface properties
           deckPool = rawData.cards.map((c: any) => {
             const isMajor = c.type === 'major';
             return {
@@ -42,24 +38,19 @@ module.exports = async function handler(req: any, res: any) {
         }
       }
 
-      // Execute Fisher-Yates randomizer sequence across the entire 78-card pool
       const shuffled = [...deckPool];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
       
-      const selectedCards = shuffled.slice(0, count);
-      return res.status(200).json({ cards: selectedCards });
+      return res.status(200).json({ cards: shuffled.slice(0, count) });
     } catch (err: any) {
-      // Graceful error fallback to keep frontend execution functional
       return res.status(200).json({ cards: FALLBACK_POOL.slice(0, parseInt(req.query.count, 10) || 3) });
     }
   }
 
-  // =========================================================================
   // --- POST ROUTE: Handles Context Interpretation Matrix ---
-  // =========================================================================
   if (req.method === 'POST') {
     try {
       const { question, cards } = req.body;
@@ -69,7 +60,6 @@ module.exports = async function handler(req: any, res: any) {
         return res.status(500).json({ error: 'Server configuration error: GEMINI_API_KEY is missing.' });
       }
 
-      // Draft a surprise shadow undercurrent pulled dynamically out of the ether
       const alternativeShadowOptions = ['The Moon', 'The Tower', 'Death', 'The Hanged Man', 'Wheel of Fortune'];
       const unselectedShadows = alternativeShadowOptions.filter(name => !cards.includes(name));
       const surpriseShadowCard = unselectedShadows[Math.floor(Math.random() * unselectedShadows.length)] || 'The Unknown';
@@ -98,18 +88,18 @@ module.exports = async function handler(req: any, res: any) {
               Structural Rules:
               - Answer the query directly in your opening observations, skipping empty preambles.
               - Dedicate exactly 2-3 precise sentences to analyzing the intersection of each individual card with their situation.
-              - Include a dedicated section called "The Undercurrent (Your Shadow Card)" right before you close to reveal the surprise card, highlighting an unacknowledged motivation or blind spot.
+              - Include a dedicated section called "The Undercurrent" right before you close to reveal the surprise shadow card, highlighting an unacknowledged motivation or blind spot.
               
-              Flow & Ending Restrictions (Crucial):
+              Flow & Ending Restrictions (Strict Integrity):
               - Maintain a continuous, fluid narrative flow. Every segment must gracefully hand off to the next.
               - Never use abrupt, transactional termination tags or summarizing sign-offs (e.g., Avoid closing with "Hopefully this helps!", "That is your reading for today", "Good luck on your journey", or concluding bullet summaries).
-              - Conclude your advice with a normal, fully integrated sentence that allows the core psychological insight to settle naturally, ending the text elegantly.`
+              - Ensure your final sentence is structurally complete. Do not cut off mid-thought. Finish the text with a grounded, actionable thought that allows the core insight to rest naturally.`
             }]
           },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.55,
-            maxOutputTokens: 950
+            temperature: 0.45,
+            maxOutputTokens: 800
           }
         })
       });
