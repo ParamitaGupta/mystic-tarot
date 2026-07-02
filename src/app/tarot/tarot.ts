@@ -4,9 +4,17 @@ import { HttpClient } from '@angular/common/http';
 
 type CardState = 'hidden' | 'revealed';
 
-interface TarotCard {
-  id: number;
+// Updated to map matching properties from your API structure
+interface BackendTarotCard {
   name: string;
+  type: string;
+  icon: string;
+  focus: string;
+}
+
+// Extends the backend shape with the frontend tracking variables
+interface TarotCard extends BackendTarotCard {
+  id: number;
   state: CardState;
 }
 
@@ -14,8 +22,9 @@ interface ReadingResponse {
   reading: string;
 }
 
+// Updated interface to hold the array of structured card objects
 interface DeckResponse {
-  cards: string[];
+  cards: BackendTarotCard[];
 }
 
 @Component({
@@ -56,12 +65,15 @@ export class TarotComponent implements OnDestroy {
     this.stopTyping();
     this.pulledCards.set([]);
 
-    // Fetch the shuffled card configuration from your serverless API backend
+    // Fetch the full meta objects from your updated serverless endpoint
     this.http.get<DeckResponse>(`/api/reading?count=${spreadSize}`).subscribe({
       next: (response) => {
-        this.cards.set(response.cards.map((name, index) => ({
+        this.cards.set(response.cards.map((card, index) => ({
           id: index + 1,
-          name: name,
+          name: card.name,
+          type: card.type,
+          icon: card.icon,
+          focus: card.focus,
           state: 'hidden'
         })));
       },

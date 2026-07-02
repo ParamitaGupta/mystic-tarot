@@ -20,7 +20,7 @@
               aria-describedby="spread-hint">
         <option [ngValue]="0" disabled>-- Choose a Spread --</option>
         <option [ngValue]="3">3-Card Combo (Past, Present, Future)</option>
-        <option [ngValue]="1">1-Card (Comprehensive Full Spread)</option>
+        <option [ngValue]="9">9-Card Matrix (Comprehensive Full Spread)</option>
       </select>
       <small id="spread-hint" class="sr-only">Select a spread layout to reveal the interactive card area</small>
     </div>
@@ -51,6 +51,11 @@
             <p>Shuffling the sacred deck...</p>
           </div>
         } @else {
+          <!-- Screen reader summary of game state selection -->
+          <div class="sr-only" role="status" aria-live="polite">
+            Revealed {{ pulledCards().length }} of {{ spreadSize() }} cards.
+          </div>
+
           <div class="deck-board"
                [class.grid-3]="spreadSize() === 3"
                [class.grid-9]="spreadSize() === 9"
@@ -58,17 +63,22 @@
                aria-label="Tarot card deck">
             @for (card of cards(); track card.id) {
               <button class="card-scene"
-                      [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'revealed' : 'hidden, press enter to reveal')"
+                      [attr.aria-label]="'Card ' + card.id + ': ' + card.name + ' - ' + (card.state === 'revealed' ? 'Revealed: ' + card.focus : 'Hidden, click to reveal')"
                       [disabled]="card.state === 'revealed'"
                       (click)="revealCard(card)"
                       (keyup.enter)="revealCard(card)"
                       type="button">
                 <div class="card-entity" [class.is-revealed]="card.state === 'revealed'" aria-hidden="true">
+                  <!-- Back Face -->
                   <div class="card-face back">
                     <div class="constellation-pattern">✨</div>
                   </div>
+                  <!-- Front Face (Populated with your rich metadata from API) -->
                   <div class="card-face front" [class.active]="card.state === 'revealed'">
-                    <h3 class="card-title">{{card.name}}</h3>
+                    <span class="card-icon">{{ card.icon }}</span>
+                    <h3 class="card-title">{{ card.name }}</h3>
+                    <span class="card-type">{{ card.type }}</span>
+                    <p class="card-focus">{{ card.focus }}</p>
                   </div>
                 </div>
               </button>
